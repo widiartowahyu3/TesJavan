@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    container_name: tesjavan-app
+    user: "1000:1000"
+    ports:
+      - "8010:8000"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:12.3.3
+    container_name: tesjavan-db
+    environment:
+      MARIADB_DATABASE: tesjavan
+      MARIADB_USER: tesjavan
+      MARIADB_PASSWORD: secret
+      MARIADB_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 20
+
+volumes:
+  dbdata:
